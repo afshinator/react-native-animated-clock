@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { Animated, Dimensions, StyleSheet, Text, View } from "react-native";
-import dayjs from 'dayjs'
+import dayjs from "dayjs";
 
 const { width } = Dimensions.get("screen");
 const SIZE = width * 0.9;
@@ -10,50 +10,66 @@ const TICK_INTERVAL = 1000;
 export default class App extends React.Component {
   state = {
     index: new Animated.Value(0),
-    tick: new Animated.Value(0)
-  }
+    tick: new Animated.Value(0),
+  };
 
   _timer = 0;
   _ticker = null;
 
   componentDidMount() {
-    const current = dayjs()
-    const diff = current.endOf('day').diff(current, 'seconds')
-    const oneDay = 24 * 60 * 60
-    this._timer = oneDay - diff
-    this.state.tick.setValue(this._timer)
-    this._animate()
-    this._ticker = setInterval(()=> {
-      this._timer += 1
-      this.state.tick.setValue(this._timer)
-    }, TICK_INTERVAL)
+    const current = dayjs();
+    const diff = current.endOf("day").diff(current, "seconds");
+    const oneDay = 24 * 60 * 60;
+
+    this._timer = oneDay - diff;
+    this.state.tick.setValue(this._timer);
+    this.state.index.setValue(this._timer - 30) // to avoid initial jump
+
+    this._animate();
+    this._ticker = setInterval(() => {
+      this._timer += 1;
+      this.state.tick.setValue(this._timer);
+    }, TICK_INTERVAL);
   }
 
   componentWillUnmount() {
-    clearInterval(this._ticker)
-    this._ticker = null
-
+    clearInterval(this._ticker);
+    this._ticker = null;
   }
   _animate = () => {
     Animated.timing(this.state.index, {
       toValue: this.state.tick,
       duration: TICK_INTERVAL / 2,
       useNativeDriver: true,
-    }).start()
-  }
+    }).start();
+  };
 
   render() {
-    const rotateSeconds = "25deg";
+    const { index } = this.state;
+
+    const interpolated = {
+      inputRange: [0, 360],
+      outputRange: ['0deg', '360deg'],
+    }
+
+    const secondDegrees = Animated.multiply(index, 360/60)
     const transformSeconds = {
-      transform: [{ rotate: rotateSeconds }],
+      transform: [{ rotate: secondDegrees.interpolate(interpolated) }],
     };
-    const rotateMinutes = "125deg";
+
+    const rotateMinutes = Animated.divide(
+      secondDegrees,
+      new Animated.Value(60)
+    )
     const transformMinutes = {
-      transform: [{ rotate: rotateMinutes }],
+      transform: [{ rotate: rotateMinutes.interpolate(interpolated) }],
     };
-    const rotateHours = "225deg";
+
+    const rotateHours = Animated.divide(
+      rotateMinutes, new Animated.Value(12)
+    )
     const transformHours = {
-      transform: [{ rotate: rotateHours }],
+      transform: [{ rotate: rotateHours.interpolate(interpolated) }],
     };
 
     return (
@@ -62,15 +78,15 @@ export default class App extends React.Component {
         <View style={[styles.big]} />
         <View style={[styles.medium]} />
 
-        <View style={[styles.mover, transformHours]}>
+        <Animated.View style={[styles.mover, transformHours]}>
           <View style={[styles.hours]} />
-        </View>
-        <View style={[styles.mover, transformMinutes]}>
+        </Animated.View>
+        <Animated.View style={[styles.mover, transformMinutes]}>
           <View style={[styles.minutes]} />
-        </View>
-        <View style={[styles.mover, transformSeconds]}>
+        </Animated.View>
+        <Animated.View style={[styles.mover, transformSeconds]}>
           <View style={[styles.seconds]} />
-        </View>
+        </Animated.View>
         <View style={[styles.small]} />
       </View>
     );
