@@ -21,6 +21,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+      <StatusBar hidden={true} />
       <View style={[styles.big]} />
       <View style={[styles.medium]} />
 
@@ -34,6 +35,7 @@ export default function App() {
         <View style={[styles.seconds]} />
       </View>
       <View style={[styles.small]} />
+
 
     </View>
   );
