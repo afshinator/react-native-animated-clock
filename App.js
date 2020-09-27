@@ -1,12 +1,47 @@
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
-import daysjs from "dayjs";
+import { Animated, Dimensions, StyleSheet, Text, View } from "react-native";
+import dayjs from 'dayjs'
 
 const { width } = Dimensions.get("screen");
 const SIZE = width * 0.9;
+const TICK_INTERVAL = 1000;
 
 export default class App extends React.Component {
+  state = {
+    index: new Animated.Value(0),
+    tick: new Animated.Value(0)
+  }
+
+  _timer = 0;
+  _ticker = null;
+
+  componentDidMount() {
+    const current = dayjs()
+    const diff = current.endOf('day').diff(current, 'seconds')
+    const oneDay = 24 * 60 * 60
+    this._timer = oneDay - diff
+    this.state.tick.setValue(this._timer)
+    this._animate()
+    this._ticker = setInterval(()=> {
+      this._timer += 1
+      this.state.tick.setValue(this._timer)
+    }, TICK_INTERVAL)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._ticker)
+    this._ticker = null
+
+  }
+  _animate = () => {
+    Animated.timing(this.state.index, {
+      toValue: this.state.tick,
+      duration: TICK_INTERVAL / 2,
+      useNativeDriver: true,
+    }).start()
+  }
+
   render() {
     const rotateSeconds = "25deg";
     const transformSeconds = {
