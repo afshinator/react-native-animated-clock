@@ -11,6 +11,7 @@ export default class App extends React.Component {
   state = {
     index: new Animated.Value(0),
     tick: new Animated.Value(0),
+    scales: [...Array(6).keys()].map(() => new Animated.Value(0)),
   };
 
   _timer = 0;
@@ -23,7 +24,7 @@ export default class App extends React.Component {
 
     this._timer = oneDay - diff;
     this.state.tick.setValue(this._timer);
-    this.state.index.setValue(this._timer - 30) // to avoid initial jump
+    this.state.index.setValue(this._timer - 30); // to avoid initial jump
 
     this._animate();
     this._ticker = setInterval(() => {
@@ -37,46 +38,66 @@ export default class App extends React.Component {
     this._ticker = null;
   }
   _animate = () => {
-    Animated.timing(this.state.index, {
-      toValue: this.state.tick,
-      duration: TICK_INTERVAL / 2,
-      useNativeDriver: true,
-    }).start();
+    const scaleStaggerAnimations = this.state.scales.map((animated) => {
+      return Animated.spring(animated, {
+        // give an elastic quality to the animations
+        toValue: 1,
+        tension: 18,
+        friction: 3,
+        useNativeDriver: true,
+      });
+    });
+
+    Animated.parallel([
+      Animated.stagger(
+        TICK_INTERVAL / this.state.scales.length,
+        scaleStaggerAnimations
+      ),
+      Animated.timing(this.state.index, {
+        toValue: this.state.tick,
+        duration: TICK_INTERVAL / 2,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   render() {
-    const { index } = this.state;
+    const {
+      index,
+      scales: [small, med, big, secondsScale, minutesScale, hoursScale],
+    } = this.state;
 
     const interpolated = {
       inputRange: [0, 360],
-      outputRange: ['0deg', '360deg'],
-    }
+      outputRange: ["0deg", "360deg"],
+    };
 
-    const secondDegrees = Animated.multiply(index, 360/60)
+    const secondDegrees = Animated.multiply(index, 360 / 60);
     const transformSeconds = {
-      transform: [{ rotate: secondDegrees.interpolate(interpolated) }],
+      transform: [{ rotate: secondDegrees.interpolate(interpolated) },
+      { scale: secondsScale}],
     };
 
     const rotateMinutes = Animated.divide(
       secondDegrees,
       new Animated.Value(60)
-    )
+    );
     const transformMinutes = {
-      transform: [{ rotate: rotateMinutes.interpolate(interpolated) }],
+      transform: [{ rotate: rotateMinutes.interpolate(interpolated) },
+      { scale: minutesScale}],
     };
 
-    const rotateHours = Animated.divide(
-      rotateMinutes, new Animated.Value(12)
-    )
+    const rotateHours = Animated.divide(rotateMinutes, new Animated.Value(12));
     const transformHours = {
-      transform: [{ rotate: rotateHours.interpolate(interpolated) }],
+      transform: [{ rotate: rotateHours.interpolate(interpolated) },
+      { scale: hoursScale}],
     };
 
     return (
       <View style={styles.container}>
         <StatusBar hidden={true} />
-        <View style={[styles.big]} />
-        <View style={[styles.medium]} />
+        <Animated.View style={[styles.big, {transform: [{scale: big}]}]} />
+        <Animated.View style={[styles.medium, {transform: [{scale: med}]}]} />
 
         <Animated.View style={[styles.mover, transformHours]}>
           <View style={[styles.hours]} />
@@ -87,7 +108,7 @@ export default class App extends React.Component {
         <Animated.View style={[styles.mover, transformSeconds]}>
           <View style={[styles.seconds]} />
         </Animated.View>
-        <View style={[styles.small]} />
+        <Animated.View style={[styles.small, {transform: [{scale: small}]}]} />
       </View>
     );
   }
