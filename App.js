@@ -5,28 +5,36 @@ import { Dimensions, StyleSheet, Text, View } from 'react-native';
 const { width } = Dimensions.get('screen')
 const SIZE = width *  0.9
 
-
-
-
 export default function App() {
+  const rotateSeconds = '25deg'
+  const transformSeconds = {
+    transform: [{ rotate: rotateSeconds}]
+  }
+  const rotateMinutes = '125deg'
+  const transformMinutes = {
+    transform: [{ rotate: rotateMinutes}]
+  }
+  const rotateHours = '225deg'
+  const transformHours = {
+    transform: [{ rotate: rotateHours }]
+  }
+
   return (
     <View style={styles.container}>
       <View style={[styles.big]} />
       <View style={[styles.medium]} />
-      <View style={[styles.small]} />
 
-      <View style={[styles.mover]} >
+      <View style={[styles.mover, transformHours]} >
         <View style={[styles.hours]} />
       </View>
-      <View style={[styles.mover]} >
+      <View style={[styles.mover, transformMinutes]} >
         <View style={[styles.minutes]} />
       </View>
-      <View style={[styles.mover]} >
+      <View style={[styles.mover, transformSeconds]} >
         <View style={[styles.seconds]} />
       </View>
+      <View style={[styles.small]} />
 
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
     </View>
   );
 }
@@ -41,8 +49,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   hours: {
-    position: 'absolute',
-
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     height: '35%',
     marginTop: '15%',
@@ -50,8 +56,6 @@ const styles = StyleSheet.create({
     borderRadius: 4
   },
   minutes: {
-    position: 'absolute',
-
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     height: '45%',
     marginTop: '5%',
@@ -59,7 +63,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   seconds: {
-    backgroundColor: 'rgba(227, 71, 134, 1)',
+    backgroundColor: 'rgba(234, 128, 252, 1)',
     height: '50%',
     width: 2,
     borderRadius: 2
@@ -83,11 +87,11 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: 'rgba(227, 71, 134, 1)',
+    backgroundColor: 'rgba(234, 128, 252, 1)',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#292929',
     alignItems: 'center',
     justifyContent: 'center',
   },
